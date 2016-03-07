@@ -16,8 +16,7 @@ class Synth(object):
         self.loops = loops
 
     def frequencyMap(self, index):
-        # return 2**(index/12.0) * 440
-        return 200 * index
+        return 2**(index/12.0) * 440
 
 class Viewer(object):
     def __init__(self, synth=None, *size):
@@ -31,9 +30,9 @@ class Viewer(object):
         pygame.init()
         self._display_surf = pygame.display.set_mode(size, pygame.HWSURFACE | pygame.DOUBLEBUF)
         self._running = True
-        self.main(self.synth)
         #This will keep the sound playing forever, the quit event handling allows the pygame window to close without crashing
         while self._running:
+            self.main(self.synth)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self._running = False

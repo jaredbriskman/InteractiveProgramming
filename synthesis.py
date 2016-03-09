@@ -3,24 +3,42 @@ from pygame.locals import *
 import math
 import numpy as np
 import Queue
+import threading
 
-#TODO: actually implement this class
+SUBDIVISIONS = 16
 
 class Synth(object):
+
+    def main(self):
+        pass
+
     """ Document here..."""
-    def __init__(self, on = None, duration = 0.1, loops = 0):
-        if on == None:
-            on = Queue.Queue()
-        self.on = on
-        self.duration = duration
-        self.loops = loops
+    def __init__(self, bpm=120, bars=8, click=True):
+        self.bpm = bpm
+        self.bars = bars
+        self.click = click
+
+        #TODO replace with class constant
+
+        self.loop = [[] for sub in range(bars * SUBDIVISIONS)]
+        self.loop = [self.loop[beat] + ['click'] if beat % 4 == 0 else self.loop[beat] for beat in range(len(self.loop))]
+
+        print self.loop
+
+        m = threading.Thread(target=self.main, name="MAIN")
+        m.start()
+        m.join()
 
     def frequencyMap(self, index):
         return 2**(index/12.0) * 440
 
-class Viewer(object, synth = None):
-    def __init__(self, *size):
-        if synth = None
+
+
+
+
+class Viewer(object):
+    def __init__(self, synth=None, *size):
+        if synth == None:
             synth = Synth()
         self.BITS = 16
         self.synth = synth
@@ -66,5 +84,5 @@ class Viewer(object, synth = None):
             break
             pygame.quit()
 
-a = synth([1, 2, 3, 4, 5, 6, 7, 8], 1, 0])
-b = Viewer(a)
+a = Synth()
+# b = Viewer(a)

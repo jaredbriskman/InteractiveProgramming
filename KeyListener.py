@@ -14,13 +14,14 @@ class KeyListener(object):
 
     def main(self):
         while True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    sys.exit()
-                if event.type == pygame.KEYDOWN:
-                    print(keys.get(event.key, NotImplemented))
-                    # synth.on.append(keys.get(event.key, 0))
-            # print self.synth.on
+            pressed = get_pressed()
+            output = []
+            i = 0
+            for k in keys:
+                if pressed[k] == True:
+                    self.synth.on.put[i]
+                i += 1
+            time.sleep(.01)
 
 if __name__ == '__main__':
     pygame.init()

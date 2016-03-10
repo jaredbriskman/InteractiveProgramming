@@ -110,11 +110,11 @@ if __name__ == '__main__':
         next_loop = time.time()
         print a.sleep_time
         while _running:
+            #handles processing time and drift
             next_loop += a.sleep_time
             a.main()
-            sleep = next_loop - time.time()
             try:
-                time.sleep(sleep)
+                time.sleep(next_loop - time.time())
             except:
                 pass
 

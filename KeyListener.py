@@ -20,8 +20,8 @@ class KeyListener(object):
             if event.type == pygame.KEYDOWN:
                 self.synth.loop[self.synth.count].append(self.soundmap.get(event.key, 'Zoom'))
                 # print self.soundmap.get(event.key, 'Zoom')
-            if event.type == pygame.QUIT():
-                pygame.quit()
+            if event.type == pygame.QUIT:
+                self.synth.playq.put('exit')
                 sys.exit()
 
 

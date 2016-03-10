@@ -9,8 +9,8 @@ from threading import Thread
 import time
 from KeyListener import KeyListener
 import sys
-import tkSimpleDialog
-from Tkinter import *
+from Tkinter import Tk
+import entrytest
 
 SUBDIVISIONS = 16
 
@@ -64,54 +64,61 @@ class Viewer(object):
 
     def main(self):
         for sound in self.synth.playq.get():
-            sound.play()
+            if sound == 'exit':
+                break
+            self.soundmap[sound].play()
 
 if __name__ == '__main__':
     pygame.init()
+    _display_surf = pygame.display.set_mode((1000,1000), pygame.HWSURFACE | pygame.DOUBLEBUF)
+    _running = True
 
-    a, b, c = None, None, None
+
+    d = entrytest.MyDialog(Tk())
+    a = Synth(*d.values())
+    b = KeyListener(a)
+    c = Viewer(a, 'samplelist.txt')
+
     def _synthstart():
-        d = MyDialog(Tk())
-        a = Synth(*d.values())
         print 'running SYNTH'
+        global _running
         while _running:
             a.main()
         print 'finished SYNTH'
 
     def _keylistenerstart():
-        b = KeyListener(a)
         'running KEYLISTENER'
-        while _running:
-            b.main()
+        try:
+            global _running
+            while _running:
+                b.main()
+        except SystemExit:
+            _running = False
+            pygame.quit()
         print 'finished KEYLISTENER'
 
     def _viewerstart():
-        c = Viewer(a, 'samplelist.txt')
         print 'running VIEWER'
+        global _running
         while _running:
             c.main()
-        print 'started VIEWER'
+        print 'finished VIEWER'
 
-    def _exit():
-        print 'running EXIT'
-        while True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    _running = False
-                    pygame.quit()
-                    sys.exit()
-
-
-    _display_surf = pygame.display.set_mode((1000,1000), pygame.HWSURFACE | pygame.DOUBLEBUF)
-    global _running
-    _running = True
+    # def _exit():
+    #     print 'running EXIT'
+    #     while True:
+    #         for event in pygame.event.get():
+    #             if event.type == pygame.QUIT:
+    #                 _running = False
+    #                 pygame.quit()
+    #                 sys.exit()
 
     s = Thread(target=_synthstart, name="SYNTH")
     k = Thread(target=_keylistenerstart, name='KEYLISTENER')
     v = Thread(target=_viewerstart, name='VIEWER')
-    exit = Thread(target=_exit, name='EXIT')
+    # exit = Thread(target=_exit, name='EXIT')
 
-    exit.start()
+    # exit.start()
     s.start()
     k.start()
     v.start()
@@ -119,4 +126,4 @@ if __name__ == '__main__':
     s.join()
     v.join()
     k.join()
-    exit.join()
+    # exit.join()

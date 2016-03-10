@@ -27,14 +27,14 @@ class KeyListener(object):
 
     def main(self):
         """This method loops through the pygame event queue checking for key
-        presses or for a quit event. 
+        presses or for a quit event.
         """
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 self.synth.loop[self.synth.count].append(self.soundmap.get(event.key, 'Zoom'))
                 # print self.soundmap.get(event.key, 'Zoom')
             if event.type == pygame.QUIT:
-                self.synth.playq.put('exit',)
+                self.synth.playq.put(('exit',))
                 sys.exit()
 
 if __name__ == '__main__':

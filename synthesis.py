@@ -12,7 +12,7 @@ import sys
 from Tkinter import Tk
 import entrytest
 
-SUBDIVISIONS = 16
+SUBDIVISIONS = 8
 
 class Synth(object):
     """This class holds onto the state of our synthesizer. It is the M in our MVC.
@@ -46,11 +46,11 @@ class Synth(object):
         any samples it finds in the current subdivision into the sound playing
         queue.
         """
-        self.count = self.count % (self.bars * SUBDIVISIONS)
         for e in self.loop[self.count]:
             # Note that queues will take tuples, but will break up strings.
             self.playq.put((e,))
         self.count += 1
+        self.count = self.count % (self.bars * SUBDIVISIONS)
         time.sleep(self.sleep_time)
 
 
@@ -82,7 +82,7 @@ class Viewer(object):
         receives a special exit tag.
         """
         for sound in self.synth.playq.get():
-            if sound == ('exit',):
+            if sound == ('exit'):
                 break
             self.soundmap[sound].play()
 

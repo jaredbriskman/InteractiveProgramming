@@ -8,15 +8,13 @@ keys = {pygame.K_0:0, pygame.K_1:1, pygame.K_2:2, pygame.K_3:3, pygame.K_4:4, py
 
 class KeyListener(object):
 
-    # def __init__(self, synth):
-    #     self.synth = synth
-    #     main()
+    def __init__(self, synth):
+        self.synth = synth
+        main()
 
     def main(self):
         while True:
             pressed = get_pressed()
-            output = []
-            i = 0
             for k in keys:
                 if pressed[k] == True:
                     self.synth.on.put[i]

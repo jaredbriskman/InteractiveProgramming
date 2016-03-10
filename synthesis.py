@@ -30,9 +30,8 @@ class Synth(object):
         self.bpm = bpm
         self.bars = bars
         self.click = click
-        self.sleep_time = 60/ (4.0 * bpm)
+        self.sleep_time = 60.0/(bpm/4) / SUBDIVISIONS
         self.count = 0
-
         self.loop = [[] for sub in range(bars * SUBDIVISIONS)]
         self.loop = [self.loop[beat] + ['Beep'] if beat % 4 == 0 and click else self.loop[beat] for beat in range(len(self.loop))]
         self.playq = Queue()
@@ -51,9 +50,6 @@ class Synth(object):
             self.playq.put((e,))
         self.count += 1
         self.count = self.count % (self.bars * SUBDIVISIONS)
-        time.sleep(self.sleep_time)
-
-
 
 
 class Viewer(object):
@@ -111,8 +107,17 @@ if __name__ == '__main__':
     def _synthstart():
         print 'running SYNTH'
         global _running
+        next_loop = time.time()
+        print a.sleep_time
         while _running:
+            #handles processing time and drift
+            next_loop += a.sleep_time
             a.main()
+            try:
+                time.sleep(next_loop - time.time())
+            except:
+                pass
+
         print 'finished SYNTH'
 
     def _keylistenerstart():
@@ -141,10 +146,9 @@ if __name__ == '__main__':
     #                 _running = False
     #                 pygame.quit()
     #                 sys.exit()
-
-    s = Thread(target=_synthstart, name="SYNTH")
     k = Thread(target=_keylistenerstart, name='KEYLISTENER')
     v = Thread(target=_viewerstart, name='VIEWER')
+    s = Thread(target=_synthstart, name='SYNTH')
     # exit = Thread(target=_exit, name='EXIT')
 
     # exit.start()

@@ -22,7 +22,8 @@ class Synth(object):
         self.bpm = bpm
         self.bars = bars
         self.click = click
-        self.sleep_time = 60 / (4 * bpm)
+        self.sleep_time = .125
+        self.count = 0
 
         #TODO replace with class constant
 
@@ -35,15 +36,11 @@ class Synth(object):
 
 
     def main(self):
-        self.count = 0
-        self.loop_process()
-        time.sleep(self.sleep_time)
-
-    def loop_process(self):
         self.count = self.count % (self.bars * SUBDIVISIONS)
         for e in self.loop[self.count]:
-            self.playq.put(e)
+            self.playq.put((e,))
         self.count += 1
+        time.sleep(self.sleep_time)
 
 
 
@@ -59,18 +56,19 @@ class Viewer(object):
         f = open(filename)
 
         self.soundmap = {line.strip('\n')[:-4]:Sound('Samples/' + line.strip('\n')) for line in f.readlines()}
+        print self.soundmap
         #the number of channels specified here is NOT
         #the channels talked about here http://www.pygame.org/docs/ref/mixer.html#pygame.mixer.get_num_channels
 
     def main(self):
         for sound in self.synth.playq.get():
-            if sound == 'exit':
+            if sound == ('exit',):
                 break
             self.soundmap[sound].play()
 
 if __name__ == '__main__':
     pygame.init()
-    _display_surf = pygame.display.set_mode((1000,1000), pygame.HWSURFACE | pygame.DOUBLEBUF)
+    _display_surf = pygame.display.set_mode((100,100), pygame.HWSURFACE | pygame.DOUBLEBUF)
     _running = True
 
 

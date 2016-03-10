@@ -13,7 +13,7 @@ class KeyListener(object):
         self.synth = synth
         f = open(filename)
         samplenames = f.readlines()
-        self.soundmap = {keys[i]:samplenames[i][:-4] for i in range(len(keys))}
+        self.soundmap = {keys[i]:samplenames[i][:-5] for i in range(len(keys))}
 
     def main(self):
         for event in pygame.event.get():

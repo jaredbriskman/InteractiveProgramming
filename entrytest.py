@@ -15,12 +15,12 @@ class MyDialog(tkSimpleDialog.Dialog):
         return self.e1 # initial focus
 
     def apply(self):
-        first = int(self.e1.get())
-        second = int(self.e2.get())
+        try:
+            first = int(self.e1.get())
+            second = int(self.e2.get())
+        except:
+            first, second = 120, 8
         self.result = first, second
 
     def values(self):
         return self.result
-
-d = MyDialog(Tk())
-print d.values()

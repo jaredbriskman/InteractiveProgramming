@@ -1,11 +1,16 @@
 import pygame
+from pygame.mixer import *
 from pygame.locals import *
 import math
 import numpy as np
-import Queue
+from Queue import Queue
 import threading
+from threading import Thread
 import time
-import string
+from KeyListener import KeyListener
+import sys
+from Tkinter import Tk
+import entrytest
 
 SUBDIVISIONS = 16
 
@@ -13,32 +18,29 @@ class Synth(object):
 
     """ Document here..."""
     def __init__(self, bpm=120, bars=8, click=True):
+
         self.bpm = bpm
         self.bars = bars
         self.click = click
-        self.sleep_time = 60 / (4 * bpm)
+        self.sleep_time = .125
+        self.count = 0
 
         #TODO replace with class constant
 
         self.loop = [[] for sub in range(bars * SUBDIVISIONS)]
-        self.loop = [self.loop[beat] + ['click'] if beat % 4 == 0 else self.loop[beat] for beat in range(len(self.loop))]
-
-        print self.loop
-
-        playq = Queue.Queue()
-
-        s = threading.Thread(target=self.main, )
+        self.loop = [self.loop[beat] + ['Beep'] if beat % 4 == 0 else self.loop[beat] for beat in range(len(self.loop))]
+        self.playq = Queue()
 
     def frequencyMap(self, index):
         return 2**(index/12.0) * 440
 
 
     def main(self):
-        self.count = 0
-        while True:
-            for e in self.loop[count]:
-                playq.put(e)
-                time.sleep(self.sleep_time)
+        self.count = self.count % (self.bars * SUBDIVISIONS)
+        for e in self.loop[self.count]:
+            self.playq.put((e,))
+        self.count += 1
+        time.sleep(self.sleep_time)
 
 
 
@@ -49,34 +51,77 @@ class Viewer(object):
             synth = Synth()
         self.synth = synth
 
+        pygame.mixer.init()
+
         f = open(filename)
 
-        self.soundmap = {line.strip('\n')[:-4]:pygame.mixer.Sound(line.strip('\n')) for line in f.readlines()}
+        self.soundmap = {line.strip('\n')[:-4]:Sound('Samples/' + line.strip('\n')) for line in f.readlines()}
+        print self.soundmap
         #the number of channels specified here is NOT
         #the channels talked about here http://www.pygame.org/docs/ref/mixer.html#pygame.mixer.get_num_channels
-        pygame.mixer.init()
-        pygame.init()
-        _display_surf = pygame.display.set_mode(size, pygame.HWSURFACE | pygame.DOUBLEBUF)
-        _running = True
 
-        m = threading.Thread(target=self.main, name="AUDIOPLAYER")
-        m.start()
-        m.join()
-
-        exit = threading.Thread(target=self.exit, name='EXIT')
-        exit.start()
-        exit.join()
-
-    def exit(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                _running = False
+    def main(self):
+        for sound in self.synth.playq.get():
+            if sound == ('exit',):
                 break
-        pygame.quit()
+            self.soundmap[sound].play()
 
-    def main(self, synth):
-        for sound in synth.playq.get():
-            sound.play()
+if __name__ == '__main__':
+    pygame.init()
+    _display_surf = pygame.display.set_mode((100,100), pygame.HWSURFACE | pygame.DOUBLEBUF)
+    _running = True
 
-a = Synth()
-b = Viewer(a)
+
+    d = entrytest.MyDialog(Tk())
+    a = Synth(*d.values())
+    b = KeyListener(a)
+    c = Viewer(a, 'samplelist.txt')
+
+    def _synthstart():
+        print 'running SYNTH'
+        global _running
+        while _running:
+            a.main()
+        print 'finished SYNTH'
+
+    def _keylistenerstart():
+        'running KEYLISTENER'
+        try:
+            global _running
+            while _running:
+                b.main()
+        except SystemExit:
+            _running = False
+            pygame.quit()
+        print 'finished KEYLISTENER'
+
+    def _viewerstart():
+        print 'running VIEWER'
+        global _running
+        while _running:
+            c.main()
+        print 'finished VIEWER'
+
+    # def _exit():
+    #     print 'running EXIT'
+    #     while True:
+    #         for event in pygame.event.get():
+    #             if event.type == pygame.QUIT:
+    #                 _running = False
+    #                 pygame.quit()
+    #                 sys.exit()
+
+    s = Thread(target=_synthstart, name="SYNTH")
+    k = Thread(target=_keylistenerstart, name='KEYLISTENER')
+    v = Thread(target=_viewerstart, name='VIEWER')
+    # exit = Thread(target=_exit, name='EXIT')
+
+    # exit.start()
+    s.start()
+    k.start()
+    v.start()
+
+    s.join()
+    v.join()
+    k.join()
+    # exit.join()

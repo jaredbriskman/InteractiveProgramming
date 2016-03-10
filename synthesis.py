@@ -4,19 +4,19 @@ import math
 import numpy as np
 import Queue
 import threading
+import time
+import string
 
 SUBDIVISIONS = 16
 
 class Synth(object):
-
-    def main(self):
-        pass
 
     """ Document here..."""
     def __init__(self, bpm=120, bars=8, click=True):
         self.bpm = bpm
         self.bars = bars
         self.click = click
+        self.sleep_time = 60 / (4 * bpm)
 
         #TODO replace with class constant
 
@@ -25,64 +25,58 @@ class Synth(object):
 
         print self.loop
 
-        m = threading.Thread(target=self.main, name="MAIN")
-        m.start()
-        m.join()
+        playq = Queue.Queue()
+
+        s = threading.Thread(target=self.main, )
 
     def frequencyMap(self, index):
         return 2**(index/12.0) * 440
 
 
+    def main(self):
+        self.count = 0
+        while True:
+            for e in self.loop[count]:
+                playq.put(e)
+                time.sleep(self.sleep_time)
+
 
 
 
 class Viewer(object):
-    def __init__(self, synth=None, *size):
+    def __init__(self, synth=None, filename='samplelist.txt'):
         if synth == None:
             synth = Synth()
-        self.BITS = 16
         self.synth = synth
+
+        f = open(filename)
+
+        self.soundmap = {line.strip('\n')[:-4]:pygame.mixer.Sound(line.strip('\n')) for line in f.readlines()}
         #the number of channels specified here is NOT
         #the channels talked about here http://www.pygame.org/docs/ref/mixer.html#pygame.mixer.get_num_channels
-        pygame.mixer.pre_init(44100, -self.BITS, 2)
+        pygame.mixer.init()
         pygame.init()
         _display_surf = pygame.display.set_mode(size, pygame.HWSURFACE | pygame.DOUBLEBUF)
         _running = True
-        main(self.synth)
+
+        m = threading.Thread(target=self.main, name="AUDIOPLAYER")
+        m.start()
+        m.join()
+
+        exit = threading.Thread(target=self.exit, name='EXIT')
+        exit.start()
+        exit.join()
+
+    def exit(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                _running = False
+                break
+        pygame.quit()
 
     def main(self, synth):
-        # duration = synth.duration # in seconds
-        # frequency = synth.frequencyMap(synth.on.pop())
-        # #freqency for the left speaker
-        # frequency_l = frequency
-        # #frequency for the right speaker
-        # frequency_r = frequency
-        # sample_rate = 44100
-        # n_samples = int(round(duration*sample_rate))
-        #
-        # #setup our numpy array to handle 16 bit ints, which is what we set our mixer to expect with "bits" up above
-        # buf = np.zeros((n_samples, 2), dtype = np.int16)
-        # max_sample = 2**(self.BITS - 1) - 1
-        #
-        # for s in range(n_samples):
-        # t = float(s)/sample_rate    # time in seconds
-        #
-        # #grab the x-coordinate of the sine wave at a given time, while constraining the sample to what our mixer is set to with "bits"
-        # buf[s][0] = int(round(max_sample*math.sin(2*math.pi*frequency_l*t)))        # left
-        # buf[s][1] = int(round(max_sample*0.5*math.sin(2*math.pi*frequency_r*t)))    # right
-        #
-        # sound = pygame.sndarray.make_sound(buf)
-        # #play once, then loop forever
-        # sound.play(self.loops)
-
-
-        #This will keep the sound playing forever, the quit event handling allows the pygame window to close without crashing
-        while _running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    _running = False
-            break
-            pygame.quit()
+        for sound in synth.playq.get():
+            sound.play()
 
 a = Synth()
-# b = Viewer(a)
+b = Viewer(a)

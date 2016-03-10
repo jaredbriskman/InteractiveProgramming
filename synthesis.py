@@ -96,8 +96,10 @@ if __name__ == '__main__':
 
     #pygame initialization
     pygame.init()
-    _display_surf = pygame.display.set_mode((100,100), pygame.HWSURFACE | pygame.DOUBLEBUF)
+    _display_surf = pygame.display.set_mode((46,45), pygame.HWSURFACE | pygame.DOUBLEBUF)
     _running = True
+    img = pygame.image.load('speaker.bmp')
+    screen.blit(img, pygame.Surface.getRect(img))
 
     #synthesizer initialization
     d = entrytest.MyDialog(Tk())
